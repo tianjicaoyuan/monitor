@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>welcome to you</title>
+    <link href="file:///android_asset/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <style type="text/css">
+        .box-left{float:left}
+        .box-right{float:right}
+        .box-clear{clear:both}
+        .r{bottom:0;text-align:center}
+    </style>
+</head>
+<body>
+<div>
+    <ul class="nav nav-pills">
+        <li class="dropdown active">
+            <a class="dropdown-toggle" data-toggle="dropdown" href="#">
+                Home <span class="caret"></span>
+            </a>
+            <ul class="dropdown-menu">
+                <li class="active"><a href="settings.html">设置</a></li>
+                <li class="active"><a href="javascript:void(0);" onclick="CloudIndex()">云存储服务</a></li>
+                <li class="active"><a href="User.html">账号</a></li>
+                <li class="active"><a href="advice.html">意见反馈</a></li>
+                <li class="active"><a href="Help.html">帮助</a></li>
+            </ul>
+        </li>
+        <li><a href="AddCamera.html">AddCamera</a></li>
+        <li><a href="Message.html">Message</a></li>
+        <li><a href="login.html">loginOut</a></li>
+    </ul>
+</div>
+<div class="box">
+    <div class="box-left" id="Date"></div>
+    <div class="box-right">正常模式</div>
+    <div class="box-clear"></div>
+</div>
+<div class="container" id="camera"></div>
+<div>
+    <div class="r">
+        <button type="button" class="btn btn-primary btn-lg " onclick="reload()">刷新</button>
+    </div>
+</div>
+<script src="file:///android_asset/bootstrap/js/jquery.js"></script>
+<script src="file:///android_asset/bootstrap/js/bootstrap.min.js"></script>
+<script src="file:///android_asset/bootstrap/js/templateWeb.js"></script>
+<script src="file:///android_asset/bootstrap/js/jquery.params.js"></script>
+<script >
+function getDate(){
+    var date=new Date();
+    var show_day=new Array('星期一','星期二','星期三','星期四','星期五','星期六','星期日');
+    var mon=date.getMonth()+1;
+    var da=date.getDate();
+    var day=date.getDay();
+    var d=document.getElementById('Date');
+    d.innerHTML=show_day[day]+' '+mon+'月'+da+'日';
+}
+setInterval("getDate()",1000);
+</script>
+<script>
+    //多个参数通过页面传值
+    function param_url(paramList){
+        var url ="";
+        for(var key in paramList){
+            url = url + key + "=" + paramList[key]+"&";
+        }
+        return url;
+    }
+    function CloudIndex(){
+    //页面传递username来搜索历史资源
+        var username =$.query.get("username");
+        list ={"username":username};
+        url = "Cloud.html?"+ param_url(list);
+        window.location.assign(url);
+    }
+</script>
+<!--显示用户拥有的网络摄像机-->
+<script id="cameraContent" type="text/html">
+    <ul>
+        {{each list value index }}
+        <li class="list-group-item ">camera-
+            <button class="video-show" value={{value.cameraIpAddress}} onclick="seeMovie(this)">{{value.cameraName}}
+                <strong style="color:blue">{{value.statue}}</strong>
+            </button>
+        </li>
+        {{/each}}
+    </ul>
+</script>
+<script >
+   $.ajax({
+           type:'POST',
+           url:'http://172.18.251.1:5000/api/v1.0/GetCamera',
+           data:{"username":$.query.get("username")},
+           dataType:'json',
+           timeout:5000,
+       }).done(function(data){
+                //拼接列表页面
+               var html = '';
+               if(data.success == "true"){
+                   var cameraAddress = data.cameraAddress;
+                   var data ={title:"camera",isAdmin:true,list:cameraAddress};
+                   html = template('cameraContent',data);
+               }else{
+                   var test=$.query.get("username");
+                   html = '<ul class="list-group"><li class="list-group-item active">未添加camera</li></ul>';
+               }
+               document.getElementById('camera').innerHTML = html;
+       }).fail(function(){
+                alert("网络问题，请确认网络已连接好！");
+       });
+</script>
+<script>
+    function seeMovie(obj){
+    //获取网络摄像机的IP地址，播放HLS流
+        var address = obj.value;
+        window.videoActivity.show(address)
+    }
+</script>
+<script>
+    function reload(){
+        window.location.href ="index.html";
+    }
+</script>
+</body>
+</html>

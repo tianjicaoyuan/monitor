@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>welcome to you</title>
+    <link href="file:///android_asset/bootstrap/css/bootstrap.css" rel="stylesheet">
+    <link href="file:///android_asset/bootstrap/css/bootstrapValidator.css" rel="stylesheet"/>
+    <style>
+        .pageFind{position:absolute;bottom:0px;left:50%;transform: translate(-50%, -50%);}
+        .list-group-item{overflow:hidden;width:100%;height:45px;}
+        .user-left{float:left}
+        .user-right{float:right}
+        .user-clear{clear:both}
+        .user{text-align:center}
+    </style>
+</head>
+<body>
+<div class="panel panel-primary">
+    <div class="row panel-heading">
+        <div class="user">
+            <div class="user-left" onclick="goback()">返回</div>
+            <span><strong>云存储</strong></span>
+            <div class="user-right" onclick="reload()">刷新</div>
+            <div class="user-clear"></div>
+        </div>
+    </div>
+    <div class="panel-body">
+        <form id="checkForm">
+            <div class="form-group">
+                <input type="text" class="form-control"  name="beginTime" id="beginTime" placeholder="开始日期">
+            </div>
+            <div class="form-group">
+                <input type="text" class="form-control"  name="endTime" id="endTime" placeholder="截止日期">
+            </div>
+            <button type="button" onclick="return check(this.form);"  id="validateBtn" class="btn btn-info btn-block">查找</button>
+        </form>
+    </div>
+</div>
+<div class="container" id="cloud">
+
+</div>
+<div class="pageFind">
+    <ul id="pageLimit"></ul>
+</div>
+<script src="file:///android_asset/bootstrap/js/jquery.js"></script>
+<script src="file:///android_asset/bootstrap/js/bootstrap.min.js"></script>
+<script src="file:///android_asset/bootstrap/js/bootstrapPaginator.js"></script>
+<script src="file:///android_asset/bootstrap/js/templateWeb.js"></script>
+<script src="file:///android_asset/bootstrap/js/jquery.params.js"></script>
+<script id="cloudContent" type="text/html">
+    <ul class="list-group">
+        {{ each list value index }}
+        <li class="list-group-item">
+            <button class="video-show" value={{value.PicturePath}} onclick="seeMovie(this)">{{value.cameraName}}
+                {{value.dateTime}}
+            </button>
+        </li>
+       {{ /each }}
+    </ul>
+</script>
+<script>
+    // 获取历史视频第一页资源的URL
+    $(function resBegin() {
+        $.ajax({
+                    type:'POST',
+                    url:'http://172.18.251.1:5000/api/v1.0/GetCloud',
+                    data:{"check":"false","page":1,"username":$.query.get("username")},
+                    dataType:'JSON',
+                    timeout:5000,
+                    success:function (data) {
+                        var html = "";
+                        var sumPage=data.page_count;
+                        pagBegin(sumPage);//显示导航栏
+                        var page_content=data.page_content;
+                        if(data.success == "true"){
+                            var data ={title:"cloud",isAdmin:true,list:page_content};
+                            html = template('cloudContent',data);
+                        }else{
+                            html = '<ul class="list-group"><li class="list-group-item">没有记录</li></ul>';
+                        }
+                        document.getElementById('cloud').innerHTML = html;
+                    },
+                    error:function(){
+                        document.getElementById('cloud').innerHTML ='<p>网络错误</p>';
+                    }
+        });
+})
+</script>
+<script>
+//导航栏
+function pagBegin(sumPage){
+    var numberPage;
+    if (sumPage<5){
+            numberPage = sumPage;
+    }else{
+            numberPage = 5;
+    }
+    $('#pageLimit').bootstrapPaginator({
+    currentPage: 1,//当前的请求页面。
+    totalPages:sumPage ,//一共多少页。
+    size:"small",//应该是页眉的大小。
+    bootstrapMajorVersion:3,//bootstrap的版本要求。
+    alignment:"right",
+    numberOfPages:numberPage,//一页列出多少数据。
+    itemTexts: function (type, page, current) {//如下的代码是将页眉显示的中文显示我们自定义的中文。
+        switch (type) {
+        case "first": return "首页";
+        case "prev": return "上一页";
+        case "next": return "下一页";
+        case "last": return "末页";
+        case "page": return page;
+        }
+    },
+    onPageClicked: function (event, originalEvent, type, page){
+        $.ajax({
+                    url:'http://172.18.251.1:5000/api/v1.0/GetCloud',
+                    type:'POST',
+                    data:{"check":"false","page":page,"username":$.query.get("username")},
+                    dataType:'JSON',
+                    success:function (data) {
+                        var html = '';
+                        var page_content=data.page_content;
+                        if(data.success == "true"){
+                            var data ={title:"cloud",isAdmin:true,list:page_content};
+                            html = template('cloudContent',data);
+                        }else{
+                            html = '<ul><li class="list-group-item">没有记录</li><ul>';
+                        }
+                        document.getElementById('cloud').innerHTML = html;
+                    },
+                    error:function(){
+                        alert("网络错误");
+                    }
+        });
+    }
+});
+}
+</script>
+<script>
+//点击导航栏页数，导航栏变化
+function pagCheck(sumPage,beginTime,endTime){
+        var numberPage;
+        if (sumPage<5){
+            numberPage = sumPage;
+        }else{
+            numberPage = 5;
+        }
+        $('#pageLimit').bootstrapPaginator({
+        currentPage: 1,//当前的请求页面。
+        totalPages:sumPage ,//一共多少页。
+        size:"small",//应该是页眉的大小。
+        bootstrapMajorVersion: 3,//bootstrap的版本要求。
+        alignment:"right",
+        numberOfPages:numberPage,//一页列出多少数据。
+        itemTexts: function (type, page, current) {//如下的代码是将页眉显示的中文显示我们自定义的中文。
+            switch (type) {
+            case "first": return "首页";
+            case "prev": return "上一页";
+            case "next": return "下一页";
+            case "last": return "末页";
+            case "page": return page;
+            }
+        },
+        onPageClicked: function (event, originalEvent, type, page){
+            $.ajax({
+                url:'http://172.18.251.1:5000/api/v1.0/GetCloud',
+                type:'POST',
+                data:{"check":"true","beginTime":beginTime,"endTime":endTime,
+                page':page,"username":$.query.get("username")},
+                dataType:'JSON',
+                timeout:5000,
+                success:function (data) {
+                    var html = '';
+                    var page_content=data.page_content;
+                    if(data.success == "true"){
+                        var data ={title:"cloud",isAdmin:true,list:page_content};
+                        html = template('cloudContent',data);
+                    }else{
+                        html = '<ul><li class="list-group-item">没有记录</li><ul>';
+                    }
+                    document.getElementById('cloud').innerHTML = html;
+                },
+                error:function(){
+                        alert("网络错误");
+                    }
+            });
+        }
+        });
+     }
+</script>
+<script>
+//点击导航栏
+    function check(form){
+    var beginTime = $("#beginTime").val(),dataTime = $("#dataTime").val();
+    var username =$.query.get("username") ;
+    if($.isEmptyObject(beginTime)|| $.isEmptyObject(endTime)){
+      alert("请输入开始日期或者结束日期");
+      return false;
+    }
+    else{
+        $.ajax({
+            type:'post',
+            url:'http://172.18.251.1:5000/api/v1.0/GetCloud',
+            data:{"check":"true","beginTime":beginTime,"endTime":endTime,"page":1,"username":username},
+            dataType:"json",
+            timeout:5000,
+        }).done(function(data){
+                var html = '';
+                var page_content=data.page_content;
+                var beginTime = data.beginTime,endTime = data.endTime;
+                var sumPage=data.page_count;
+                pagCheck(sumPage,beginTime,endTime);
+                if(data.success == "true"){
+                    var data ={title:"cloud",isAdmin:true,list:page_content};
+                    html = template('cloudContent',data);
+                }else{
+                    html = '<ul><li class="list-group-item">没有记录</li><ul>';
+                }
+                document.getElementById('cloud').innerHTML = html;
+
+        }).fail(function(jqXHR,textStatus,errorThrown){
+            alert("网络问题");
+        });
+    }
+}
+</script>
+<script>
+    function goback(){
+        window.history.back();
+    }
+</script>
+<script>
+    function reload(){
+        window.location.href ="Cloud.html";
+    }
+</script>
+<script>
+    function seeMovie(obj){
+        val videoPath = obj.value;
+        window.location.href ="video?"+ videoPath;
+    }
+</script>
+</body>
+</html>

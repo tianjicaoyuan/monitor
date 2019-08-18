@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Camera</title>
+    <link href="{{ url_for('static', filename='css/bootstrap.min.css')}}" rel="stylesheet">
+</head>
+<div class="panel panel-primary">
+    <div class="row panel-heading">
+        <h4 class="text-center">Add NetWork</h4>
+    </div>
+    <div class="panel-body">
+        <form id="loginForm">
+            <div class="form-group">
+                <input type="text" class="form-control" id="NetWork ID" name="NetWork ID" placeholder="NetWork ID">
+            </div>
+            <div class="form-group">
+                <input type="password" class="form-control" id="password" name="password" placeholder="Password">
+            </div>
+            <button type="button" class="btn btn-info btn-block" id="mySubmit" onclick="return check(this.form);">finish</button>
+        </form>
+    </div>
+</div>
+</body>
+</html>

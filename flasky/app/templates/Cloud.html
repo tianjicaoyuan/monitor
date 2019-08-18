@@ -1,0 +1,51 @@
+{% extends "index.html" %}
+{% import "bootstrap/wtf.html" as wtf %}
+{% import "_macros.html" as macros %}
+{% block title %}Flasky - Cloud{% endblock %}
+{% block content %}
+<div class="container">
+    <h1>Video records</h1>
+    <div class = "row">
+        <div class="col-md-4">
+        {{ wtf.quick_form(form) }}
+        </div>
+    </div>
+    <ul class="list-group">
+        {% for post in posts %}
+        <li class="list-group-item">
+            <button class="btn btn-primary btn-lg" data-toggle="modal" data-target="#myModal">{{post.cameraName}}
+	        {{post.dateTime}}</button>
+            <!-- £¨Modal£© -->
+            <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="videoPlayModel" aria-hidden="true">
+	            <div class="modal-dialog">
+		            <div class="modal-content">
+			            <div class="modal-body">
+				            <button type="button" class="close" data-dismiss="modal" style="position:absolute; top:5px; right:5px;">X</button>
+				            <video id="modal-video"  controls style="width:100%" >
+					            <source src="{{url_for('static',filename=post.PicturePath)}}" type="video/mp4"/>
+				            </video>
+			            </div>
+		            </div><!-- /.modal-content -->
+	            </div><!-- /.modal -->
+            </div>
+        </li>
+       {% endfor %}
+    </ul>
+    {% if pagination %}
+    <div class="pagination">
+        {{ macros.pagination_widget(pagination, '.cloud') }}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+{% block scripts %}
+{{ super() }}
+<script>
+$(function() {
+    var video = document.getElementById('modal-video')
+	$('button.close').click(function() {
+        video.pause();
+	});
+});
+</script>
+{% endblock %}

@@ -1,0 +1,73 @@
+﻿D:\soft\ffmpeg\bin>
+ffmpeg -f dshow -i video="USB2.0 PC CAMERA" -vcodec libx264 -an -f hls -hls_time 2.0 -hls_list_size 5 -hls_wrap 5 "F:/pythonproject/flasky/app/static/stream/jin.m3u8"
+
+  libavcodec     58. 39.100 / 58. 39.100
+  libavformat    58. 22.100 / 58. 22.100
+  libavdevice    58.  6.100 / 58.  6.100
+  libavfilter     7. 43.100 /  7. 43.100
+  libswscale      5.  4.100 /  5.  4.100
+  libswresample   3.  4.100 /  3.  4.100
+  libpostproc    55.  4.100 / 55.  4.100
+[dshow @ 00000000005c0600] DirectShow video devices (some may be both video and
+audio devices)
+[dshow @ 00000000005c0600]  "USB2.0 PC CAMERA"
+[dshow @ 00000000005c0600]     Alternative name "@device_pnp_\\?\usb#vid_1908&pi
+d_2310&mi_00#6&4ea3e11&0&0000#{65e8773d-8f56-11d0-a3b9-00a0c9223196}\global"
+[dshow @ 00000000005c0600] DirectShow audio devices
+[dshow @ 00000000005c0600]  "麦克飿(2- USB2.0 MIC)"
+[dshow @ 00000000005c0600]     Alternative name "@device_cm_{33D9A762-90C8-11D0-
+BD43-00A0C911CE86}\麦克飿(2- USB2.0 MIC)"
+[dshow @ 00000000005c0600]  "立体声混響(Realtek High Definition "
+[dshow @ 00000000005c0600]     Alternative name "@device_cm_{33D9A762-90C8-11D0-
+BD43-00A0C911CE86}\立体声混響(Realtek High Definition "
+[dshow @ 00000000005c0600]  "麦克飿(Realtek High Definition Au"
+[dshow @ 00000000005c0600]     Alternative name "@device_cm_{33D9A762-90C8-11D0-
+BD43-00A0C911CE86}\麦克飿(Realtek High Definition Au"
+dumy: Immediate exit requested
+
+经测试使用nginx加ffmpeg，直播成功，但是言辞很高。30s左右。
+ffmpeg -f dshow -i video="USB2.0 PC CAMERA" -vcodec libx264 -an -f hls -hls_time 2.0 -hls_list_size 5 -hls_wrap 5 D：\nginx-1.14.2\html\test.m3u8
+打开配置文件nginx\conf\mime.types，为了支持hls协议，需要修改内容：
+
+在 application/zip zip; 这一行后面增加2行： 
+application/x-mpegURL m3u8; 
+application/vnd.apple.mpegurl m3u8;
+ 
+在 video/x-msvideo avi;行后，增加1行： 
+video/MP2T ts;
+
+在D：\nginx-1.14.2\html\movie.html。添加即可。
+开启nignx服务器。再浏览器访问127.0.0.1/movie.html.即可播放。
+
+
+树莓派hls直播：先下载好nginx和ffmpeg，有简书为例。
+在当前目录即/home/pi创建hls.sh文件，写入以下内容，其中-r 10代表帧率为10，
+-s 640x480代表分辨率，-b:v 300k代表视频码率，c:v h264_omx代表使用树莓派的omx硬件编码器，
+-segment_time 2代表每个切片最长2秒，-segment_wrap 3代表切片数量为3，-segment_list_size 3代表缓冲文件数量/M3U8中文件个数为3，
+最后将切片的文件放到/var/www/hls目录并生成stream.m3u8。
+
+
+之前一直尝试将ffmpeg产生的流放置在web服务器的"F:/pythonproject/flasky/app/static/stream/jin.m3u8"中，理由是浏览器的跨域访问问题。
+接下来是研究如何缩短延迟问题。延词问题是点开摄像头直播画面，观看到的是30s之前的画面。而切片一共5片，前面4片8秒，后面一片2s。一共34s。
+首先浏览器读取TS并解析需要时间。此时后台再不断更新TS和M3U8。经过调整-hls_time 1.0 -hls_list_size 3 -hls_wrap 3.延词达到15秒左右。
+再调低还是15s左右。
+
+这个是在树莓派中分流的程序。不过首先要参考https://www.jianshu.com/p/78c888acdc70 该页面，
+将ffmpeg采用硬件编码，中的ffmpeg采用3.4.6.且修改为--enable-shared --enable-static \ configure配置必须在一行上。
+且必须在/etc/lb.so.cof配置中添加/usr/local/lib,然后执行ldconfig命令。
+ffmpeg -f v4l2 -r 30 -s 640x480 -i /dev/video0 -b:v 300k -c:v h264_omx -an -f segment -segment_time 2 -segment_wrap 4 -segment_list_size 2 -segment_list "/var/www/html/hls/stream.m3u8" "/var/www/html/hls/stream%03d.ts"最终达到延迟7s左右。
+
+ffmpeg -f v4l2 -r 25 -s 1280x720 -i /dev/video0 -b:v 3072k -c:v h264_omx -an -f segment -segment_time 2 -segment_wrap 4 -segment_list_size 2 -segment_list "/var/www/html/hls/stream.m3u8" "/var/www/html/hls/stream%03d.ts"稳定后5.7s
+
+播放流程是请求M3U8文件，所需时间极短，请求时，可能还没有TS文件生成，所以不播放，若生成则播放，若列表含有的TS文件过少，且时间短，则一播放完就需等待。缩短时间，就是减少TS片长，增加切片数。但是片场不可低于1S，所以只能减少切片数。
+-segment_time 1 -segment_wrap 4  -segment_list_size 2     4.7s
+-segment_time 1 -segment_wrap 3  -segment_list_size 2     4.3s
+-segment_time 1 -segment_wrap 2  -segment_list_size 2     3s     短暂卡顿
+-segment_time 1 -segment_wrap 2  -segment_list_size 1     2.5s   短暂卡顿
+-segment_time 0.7 -segment_wrap 2  -segment_list_size 1   无法播放
+-segment_time 0.7 -segment_wrap 2  -segment_list_size 2   无法播放
+-segment_time 0.5 -segment_wrap 4  -segment_list_size 4   无法顺利播放且延词3-2s，是指有时需要刷新才可显示页面，要不然一直出现请求M3U8文件的问题，没有请求TS文件播放。
+-segment_time 1 -segment_wrap 1  -segment_list_size 1     无法顺利播放，时常卡顿。
+-segment_time 1 -segment_wrap 1  -segment_list_size 2     无法顺利播放，时常卡顿。
+-segment_time 1 -segment_wrap 2  -segment_list_size 1     2.5s   短暂卡顿可以接受，每一个M3U8文件请求后均对应一个TS文件。最终的程序。
+

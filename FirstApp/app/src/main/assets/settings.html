@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0,charset=utf-8">
+    <title>welcome to you</title>
+    <link href="file:///android_asset/bootstrap/css/bootstrap.css" rel="stylesheet">
+    <style type="text/css">
+        .user-left{float:left}
+        .user-right{float:right}
+        .user-clear{clear:both}
+        .user{text-align:center}
+    </style>
+</head>
+<body>
+<div class="panel panel-primary">
+    <div class=" panel-heading">
+        <div class="user">
+        <div class="user-left" onclick="goback()">返回</div>
+        <span>网络摄像机设置</span>
+        <div class="user-right" ></div>
+        <div class="user-clear"></div>
+        </div>
+    </div>
+    <div class="panel-body">
+        <form class="form-horizontal" role="form">
+            <div class="form-group">
+                <label for="Sharpness" class="col-sm-4 control-label">图像锐度</label>
+                <div class="col-sm-8">
+                    <input type="text" class="form-control" id="Sharpness"
+                           placeholder="默认值0,-100-100之间">
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="saturation" class="col-sm-4 control-label">图像色彩饱和度</label>
+                <div class="col-sm-8">
+                    <input type="text" class="form-control" id="saturation"
+                           placeholder="默认值50,0-100之间">
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="Brightness" class="col-sm-4 control-label">图像色彩亮度</label>
+                <div class="col-sm-8">
+                    <input type="text" class="form-control" id="Brightness"
+                           placeholder="默认值50,0-100之间">
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="Iso" class="col-sm-4 control-label">ISO参数</label>
+                <div class="col-sm-8">
+                    <input type="text" class="form-control" id="Iso"
+                           placeholder="默认值800,100-1600之间">
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="moveDetection" class="col-sm-4 control-label">移动侦测</label>
+                <div class="col-sm-8">
+                    <input type="text" class="form-control" id="moveDetection"
+                           placeholder="默认值True,True or False">
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="faceRecongnise" class="col-sm-4 control-label">人脸识别</label>
+                <div class="col-sm-8">
+                    <input type="text" class="form-control" id="faceRecongnise"
+                           placeholder="默认值False,True or False">
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="Stream" class="col-sm-4 control-label">流媒体模式</label>
+                <div class="col-sm-8">
+                    <input type="text" class="form-control" id="Stream"
+                           placeholder="默认值False,True为hls流，False为image流">
+                </div>
+            </div>
+            <button type="button" class="btn btn-info btn-block" id="mySubmit" onclick="return check(this.form);">提交</button>
+        </form>
+    </div>
+</div>
+<script src="file:///android_asset/bootstrap/js/jquery.js"></script>
+<script src="file:///android_asset/bootstrap/js/bootstrap.js"></script>
+</body>
+</html>

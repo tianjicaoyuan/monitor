@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0,charset=utf-8">
+    <title>welcome to you</title>
+    <link href="file:///android_asset/bootstrap/css/bootstrap.css" rel="stylesheet">
+</head>
+<body>
+<div class="panel panel-primary">
+    <div class="row panel-heading">
+        <h4 class="text-center">新网络摄像机</h4>
+    </div>
+    <div class="panel-body">
+        <p>1.  开启网络摄像机WIFI热点模式，无线网络连接到摄像机设备。<p>
+        <p>2.  请在手机的设置->无线局域网，选择“***-****"加入，密码为 8个1。</p>
+        <p>3.  回到APP添加网络摄像机页面， 点击下一步</p>
+    </div>
+    <div class=" text-center">
+        <a href="#"  onclick="test()"><strong>下一步</strong></a>
+    </div>
+</div>
+<script src="file:///android_asset/bootstrap/js/jquery.js"></script>
+<script src="file:///android_asset/bootstrap/js/bootstrap.js"></script>
+<script>
+    function test(){
+        var address = 'http://192.168.253.1:5000/addCamera';
+        window.location.href=address;
+}
+</script>
+</body>
+</html>

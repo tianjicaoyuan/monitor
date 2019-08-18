@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>welcome to you</title>
+    <link href="file:///android_asset/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <link href="file:///android_asset/bootstrap/css/bootstrapValidator.css" rel="stylesheet">
+</head>
+<body>
+<div class="panel panel-primary">
+    <div class="row panel-heading">
+        <h4 class="text-center">注册</h4>
+    </div>
+    <div class="panel-body">
+        <form id="registerForm">
+            <div class="form-group">
+                <input type="text" class="form-control"  name="email" id="email" placeholder="邮箱">
+            </div>
+            <div class="form-group">
+                <input type="text" class="form-control"  name="username" id="username" placeholder="用户名">
+            </div>
+            <div class="form-group">
+                <input type="password" class="form-control" name="password" id="password" placeholder="密码">
+            </div>
+            <div class="form-group">
+                <input type="password" class="form-control"  name="confirmPassword" id="confirmPassword" placeholder="确认密码">
+            </div>
+            <button type="button" class="btn btn-info btn-block" id="mySubmit" onclick="return check(this.form);">注册</button>
+        </form>
+    </div>
+    <div class=" text-center">
+        <a href="login.html" ><strong>登录</strong></a>
+    </div>
+</div>
+<script src="file:///android_asset/bootstrap/js/jquery.js"></script>
+<script src="file:///android_asset/bootstrap/js/bootstrap.min.js"></script>
+<script>
+    function check(form){
+    var email = $("#email").val(),password = $("#password").val();
+    var username = $("#username").val(),confirmPassword = $("#confirmPassword").val();
+    if($.isEmptyObject(email)|| $.isEmptyObject(password)){
+        alert("请输入用户名或者密码");
+    }else if(password != confirmPassword){
+        alert("确认密码两次不一样");
+    }
+    else{
+        $.ajax({
+            type:'post',
+            url:'http://localhost:5000/api/v1.0/register',
+            data:{"email":email,"password":password,"username":username},
+            dataType:"json",
+            timeout:5000,
+        }).done(function(data){
+                if(data.success == "true"){
+                    alert("注册成功！")
+                    window.location.assign("login.html")
+                }else{
+                    alert(data.message);
+                }
+        }).fail(function(jqXHR,textStatus,errorThrown){
+            alert("网络问题，请确认网络已连接好！")
+        });
+    }
+}
+</script>
+</body>
+</html>

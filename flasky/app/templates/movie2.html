@@ -1,0 +1,47 @@
+{% extends "index.html" %}
+{% import "bootstrap/wtf.html" as wtf %}
+{% import "_macros.html" as macros %}
+{% block title %}Flasky - Cloud{% endblock %}
+{% block content %}
+<div class="container" >
+    <h1 class="text-center">Video Camera</h1>
+    <h1 class="text-center" id="Date"></h1>
+    <h3 class="text-center">
+        <video id="video" controls="controls"  width="70%" height="50%"></video>
+    </h3>
+</div>
+{% endblock %}
+{% block scripts %}
+    <script src="{{ url_for('static', filename='js/hls.min.js') }}"></script>
+    <script>
+    var video = document.getElementById('video');
+    if(Hls.isSupported()) {
+    var hls = new Hls();
+    hls.loadSource('{{camera_address}}/hls/stream.m3u8?time='+new Date().getTime());
+    hls.attachMedia(video);
+    hls.on(Hls.Events.MANIFEST_PARSED,function(){
+      video.play();
+    });
+    }
+    else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+        video.src = '{{camera_address}}/hls/stream.m3u8';
+        video.addEventListener('loadedmetadata',function() {
+        video.play();
+    });
+    }
+    </script>
+    <script >
+    function getDate(){
+    var date=new Date();
+    var year=date.getFullYear()
+    var mon=date.getMonth()+1;
+    var day=date.getDate();
+    var Hour=date.getHours();
+    var Minutes=date.getMinutes();
+    var seconds=date.getSeconds();
+    var d=document.getElementById('Date');
+    d.innerHTML=year+'-'mon+'-'+day+'-'+Hour+'-'+Minutes+'-'+seconds;
+    }
+    setInterval("getDate()",1000);
+    </script>
+{% endblock scripts %}
